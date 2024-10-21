@@ -3,27 +3,52 @@ import login_pb2
 import login_pb2_grpc
 
 def run():
-    # Ask the user for the username and password
-    username = input("Enter your username: ")
-    password = input("Enter your password: ")
+    logged_in = False
 
-    # Open a channel to the server
-    with grpc.insecure_channel('localhost:50051') as channel:
-        # Create a stub (client)
-        stub = login_pb2_grpc.LoginStub(channel)
+    while True:
+        print("Select an option:")
+        print("1. Login")
+        print("2. Logout")
+        print("3. Exit")
+        action = input("Enter 1, 2, or 3: ").strip()
 
-        # Create a login request with the user inputs
-        login_request = login_pb2.LoginRequest(userName=username, passWord=password)
+        if action == '1':
+            if not logged_in:
+                username = input("Enter your username: ")
+                password = input("Enter your password: ")
 
-        # Make the call to login method
-        response = stub.login(login_request)
-        print(f"Login Response: {response.responseMessage}, Code: {response.responseCode}")
+                with grpc.insecure_channel('localhost:50051') as channel:
+                    stub = login_pb2_grpc.LoginStub(channel)
+                    login_request = login_pb2.LoginRequest(userName=username, passWord=password)
+                    response = stub.login(login_request)
+                    print(f"Login Response: {response.responseMessage}, Code: {response.responseCode}")
 
-        # If login was successful, call logout method
-        if response.responseCode == 200:
-            empty_request = login_pb2.Empty()
-            response = stub.logout(empty_request)
-            print(f"Logout Response: {response.responseMessage}, Code: {response.responseCode}")
+                    if response.responseCode == 200:
+                        logged_in = True
+                        print("Login successful.")
+            else:
+                print("You are already logged in. Please logout first.")
+
+        elif action == '2':
+            if logged_in:
+                with grpc.insecure_channel('localhost:50051') as channel:
+                    stub = login_pb2_grpc.LoginStub(channel)
+                    empty_request = login_pb2.Empty()
+                    response = stub.logout(empty_request)
+                    print(f"Logout Response: {response.responseMessage}, Code: {response.responseCode}")
+
+                    if response.responseCode == 200:
+                        logged_in = False
+                        print("Logout successful.")
+            else:
+                print("You are not logged in. Please login first.")
+
+        elif action == '3':
+            print("Exiting...")
+            break
+
+        else:
+            print("Invalid action. Please enter '1', '2', or '3'.")
 
 if __name__ == '__main__':
     run()
