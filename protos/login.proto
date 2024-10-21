@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package com.grpc.first;
+
+service Login{
+  rpc login(LoginRequest) returns (ApiResponse);
+  rpc logout(Empty) returns(ApiResponse);
+}
+
+message LoginRequest{
+  string userName = 1;
+  string passWord = 2;
+}
+
+message ApiResponse{
+  string responseMessage = 1;
+  int32 responseCode = 2;
+}
+
+message Empty{}
